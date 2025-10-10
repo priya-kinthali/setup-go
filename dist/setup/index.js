@@ -94679,6 +94679,10 @@ function parseGoVersionFile(versionFilePath) {
         const matchGo = contents.match(/^go (\d+(\.\d+)*)/m);
         return matchGo ? matchGo[1] : '';
     }
+    else if (path.basename(versionFilePath) === '.tool-versions') {
+        const match = contents.match(/^golang\s+(\d+(\.\d+)*)/m);
+        return match ? match[1] : '';
+    }
     return contents.trim();
 }
 function resolveStableVersionDist(versionSpec, arch) {
