@@ -94627,7 +94627,7 @@ function parseGoVersionFile(versionFilePath) {
         return matchGo ? matchGo[1] : '';
     }
     else if (path.basename(versionFilePath) === '.tool-versions') {
-        const match = contents.match(/^golang\s+(v?(?<version>[^\s\n#]+))/m);
+        const match = contents.match(/^golang\s+(?:v(?=\S))?(?<version>[^\n#]+)/m);
         return match ? match[1] : '';
     }
     return contents.trim();
