@@ -94064,15 +94064,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -94085,15 +94076,15 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const constants_1 = __nccwpck_require__(9042);
 const cache_utils_1 = __nccwpck_require__(1678);
-const restoreCache = (versionSpec, packageManager, cacheDependencyPath) => __awaiter(void 0, void 0, void 0, function* () {
-    const packageManagerInfo = yield (0, cache_utils_1.getPackageManagerInfo)(packageManager);
+const restoreCache = async (versionSpec, packageManager, cacheDependencyPath) => {
+    const packageManagerInfo = await (0, cache_utils_1.getPackageManagerInfo)(packageManager);
     const platform = process.env.RUNNER_OS;
     const arch = process.arch;
-    const cachePaths = yield (0, cache_utils_1.getCacheDirectoryPath)(packageManagerInfo);
+    const cachePaths = await (0, cache_utils_1.getCacheDirectoryPath)(packageManagerInfo);
     const dependencyFilePath = cacheDependencyPath
         ? cacheDependencyPath
         : findDependencyFile(packageManagerInfo);
-    const fileHash = yield glob.hashFiles(dependencyFilePath);
+    const fileHash = await glob.hashFiles(dependencyFilePath);
     if (!fileHash) {
         throw new Error('Some specified paths were not resolved, unable to cache dependencies.');
     }
@@ -94101,7 +94092,7 @@ const restoreCache = (versionSpec, packageManager, cacheDependencyPath) => __awa
     const primaryKey = `setup-go-${platform}-${arch}-${linuxVersion}go-${versionSpec}-${fileHash}`;
     core.debug(`primary key is ${primaryKey}`);
     core.saveState(constants_1.State.CachePrimaryKey, primaryKey);
-    const cacheKey = yield cache.restoreCache(cachePaths, primaryKey);
+    const cacheKey = await cache.restoreCache(cachePaths, primaryKey);
     core.setOutput(constants_1.Outputs.CacheHit, Boolean(cacheKey));
     if (!cacheKey) {
         core.info(`Cache is not found`);
@@ -94110,7 +94101,7 @@ const restoreCache = (versionSpec, packageManager, cacheDependencyPath) => __awa
     }
     core.saveState(constants_1.State.CacheMatchedKey, cacheKey);
     core.info(`Cache restored from key: ${cacheKey}`);
-});
+};
 exports.restoreCache = restoreCache;
 const findDependencyFile = (packageManager) => {
     const dependencyFile = packageManager.dependencyFilePattern;
@@ -94164,15 +94155,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getCacheDirectoryPath = exports.getPackageManagerInfo = exports.getCommandOutput = void 0;
 exports.isGhes = isGhes;
@@ -94181,8 +94163,8 @@ const cache = __importStar(__nccwpck_require__(7799));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const package_managers_1 = __nccwpck_require__(6663);
-const getCommandOutput = (toolCommand) => __awaiter(void 0, void 0, void 0, function* () {
-    let { stdout, stderr, exitCode } = yield exec.getExecOutput(toolCommand, undefined, { ignoreReturnCode: true });
+const getCommandOutput = async (toolCommand) => {
+    let { stdout, stderr, exitCode } = await exec.getExecOutput(toolCommand, undefined, { ignoreReturnCode: true });
     if (exitCode) {
         stderr = !stderr.trim()
             ? `The '${toolCommand}' command failed with exit code: ${exitCode}`
@@ -94190,18 +94172,18 @@ const getCommandOutput = (toolCommand) => __awaiter(void 0, void 0, void 0, func
         throw new Error(stderr);
     }
     return stdout.trim();
-});
+};
 exports.getCommandOutput = getCommandOutput;
-const getPackageManagerInfo = (packageManager) => __awaiter(void 0, void 0, void 0, function* () {
+const getPackageManagerInfo = async (packageManager) => {
     if (!package_managers_1.supportedPackageManagers[packageManager]) {
         throw new Error(`It's not possible to use ${packageManager}, please, check correctness of the package manager name spelling.`);
     }
     const obtainedPackageManager = package_managers_1.supportedPackageManagers[packageManager];
     return obtainedPackageManager;
-});
+};
 exports.getPackageManagerInfo = getPackageManagerInfo;
-const getCacheDirectoryPath = (packageManagerInfo) => __awaiter(void 0, void 0, void 0, function* () {
-    const pathOutputs = yield Promise.allSettled(packageManagerInfo.cacheFolderCommandList.map((command) => __awaiter(void 0, void 0, void 0, function* () { return (0, exports.getCommandOutput)(command); })));
+const getCacheDirectoryPath = async (packageManagerInfo) => {
+    const pathOutputs = await Promise.allSettled(packageManagerInfo.cacheFolderCommandList.map(async (command) => (0, exports.getCommandOutput)(command)));
     const results = pathOutputs.map(item => {
         if (item.status === 'fulfilled') {
             return item.value;
@@ -94216,7 +94198,7 @@ const getCacheDirectoryPath = (packageManagerInfo) => __awaiter(void 0, void 0, 
         throw new Error(`Could not get cache folder paths.`);
     }
     return cachePaths;
-});
+};
 exports.getCacheDirectoryPath = getCacheDirectoryPath;
 function isGhes() {
     const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
@@ -94299,15 +94281,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -94337,174 +94310,161 @@ const MANIFEST_REPO_OWNER = 'actions';
 const MANIFEST_REPO_NAME = 'go-versions';
 const MANIFEST_REPO_BRANCH = 'main';
 const MANIFEST_URL = `https://raw.githubusercontent.com/${MANIFEST_REPO_OWNER}/${MANIFEST_REPO_NAME}/${MANIFEST_REPO_BRANCH}/versions-manifest.json`;
-function getGo(versionSpec_1, checkLatest_1, auth_1) {
-    return __awaiter(this, arguments, void 0, function* (versionSpec, checkLatest, auth, arch = os_1.default.arch()) {
-        var _a;
-        let manifest;
-        const osPlat = os_1.default.platform();
-        if (versionSpec === utils_1.StableReleaseAlias.Stable ||
-            versionSpec === utils_1.StableReleaseAlias.OldStable) {
-            manifest = yield getManifest(auth);
-            let stableVersion = yield resolveStableVersionInput(versionSpec, arch, osPlat, manifest);
+async function getGo(versionSpec, checkLatest, auth, arch = os_1.default.arch()) {
+    let manifest;
+    const osPlat = os_1.default.platform();
+    if (versionSpec === utils_1.StableReleaseAlias.Stable ||
+        versionSpec === utils_1.StableReleaseAlias.OldStable) {
+        manifest = await getManifest(auth);
+        let stableVersion = await resolveStableVersionInput(versionSpec, arch, osPlat, manifest);
+        if (!stableVersion) {
+            stableVersion = await resolveStableVersionDist(versionSpec, arch);
             if (!stableVersion) {
-                stableVersion = yield resolveStableVersionDist(versionSpec, arch);
-                if (!stableVersion) {
-                    throw new Error(`Unable to find Go version '${versionSpec}' for platform ${osPlat} and architecture ${arch}.`);
-                }
-            }
-            core.info(`${versionSpec} version resolved as ${stableVersion}`);
-            versionSpec = stableVersion;
-        }
-        if (checkLatest) {
-            core.info('Attempting to resolve the latest version from the manifest...');
-            const resolvedVersion = yield resolveVersionFromManifest(versionSpec, true, auth, arch, manifest);
-            if (resolvedVersion) {
-                versionSpec = resolvedVersion;
-                core.info(`Resolved as '${versionSpec}'`);
-            }
-            else {
-                core.info(`Failed to resolve version ${versionSpec} from manifest`);
-            }
-        }
-        // check cache
-        const toolPath = tc.find('go', versionSpec, arch);
-        // If not found in cache, download
-        if (toolPath) {
-            core.info(`Found in cache @ ${toolPath}`);
-            return toolPath;
-        }
-        core.info(`Attempting to download ${versionSpec}...`);
-        let downloadPath = '';
-        let info = null;
-        //
-        // Try download from internal distribution (popular versions only)
-        //
-        try {
-            info = yield getInfoFromManifest(versionSpec, true, auth, arch, manifest);
-            if (info) {
-                downloadPath = yield installGoVersion(info, auth, arch);
-            }
-            else {
-                core.info('Not found in manifest.  Falling back to download directly from Go');
-            }
-        }
-        catch (err) {
-            if (err instanceof tc.HTTPError &&
-                (err.httpStatusCode === 403 || err.httpStatusCode === 429)) {
-                core.info(`Received HTTP status code ${err.httpStatusCode}.  This usually indicates the rate limit has been exceeded`);
-            }
-            else {
-                core.info(err.message);
-            }
-            core.debug((_a = err.stack) !== null && _a !== void 0 ? _a : '');
-            core.info('Falling back to download directly from Go');
-        }
-        //
-        // Download from storage.googleapis.com
-        //
-        if (!downloadPath) {
-            info = yield getInfoFromDist(versionSpec, arch);
-            if (!info) {
                 throw new Error(`Unable to find Go version '${versionSpec}' for platform ${osPlat} and architecture ${arch}.`);
             }
-            try {
-                core.info('Install from dist');
-                downloadPath = yield installGoVersion(info, undefined, arch);
-            }
-            catch (err) {
-                throw new Error(`Failed to download version ${versionSpec}: ${err}`);
-            }
         }
-        return downloadPath;
-    });
-}
-function resolveVersionFromManifest(versionSpec, stable, auth, arch, manifest) {
-    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`${versionSpec} version resolved as ${stableVersion}`);
+        versionSpec = stableVersion;
+    }
+    if (checkLatest) {
+        core.info('Attempting to resolve the latest version from the manifest...');
+        const resolvedVersion = await resolveVersionFromManifest(versionSpec, true, auth, arch, manifest);
+        if (resolvedVersion) {
+            versionSpec = resolvedVersion;
+            core.info(`Resolved as '${versionSpec}'`);
+        }
+        else {
+            core.info(`Failed to resolve version ${versionSpec} from manifest`);
+        }
+    }
+    // check cache
+    const toolPath = tc.find('go', versionSpec, arch);
+    // If not found in cache, download
+    if (toolPath) {
+        core.info(`Found in cache @ ${toolPath}`);
+        return toolPath;
+    }
+    core.info(`Attempting to download ${versionSpec}...`);
+    let downloadPath = '';
+    let info = null;
+    //
+    // Try download from internal distribution (popular versions only)
+    //
+    try {
+        info = await getInfoFromManifest(versionSpec, true, auth, arch, manifest);
+        if (info) {
+            downloadPath = await installGoVersion(info, auth, arch);
+        }
+        else {
+            core.info('Not found in manifest.  Falling back to download directly from Go');
+        }
+    }
+    catch (err) {
+        if (err instanceof tc.HTTPError &&
+            (err.httpStatusCode === 403 || err.httpStatusCode === 429)) {
+            core.info(`Received HTTP status code ${err.httpStatusCode}.  This usually indicates the rate limit has been exceeded`);
+        }
+        else {
+            core.info(err.message);
+        }
+        core.debug(err.stack ?? '');
+        core.info('Falling back to download directly from Go');
+    }
+    //
+    // Download from storage.googleapis.com
+    //
+    if (!downloadPath) {
+        info = await getInfoFromDist(versionSpec, arch);
+        if (!info) {
+            throw new Error(`Unable to find Go version '${versionSpec}' for platform ${osPlat} and architecture ${arch}.`);
+        }
         try {
-            const info = yield getInfoFromManifest(versionSpec, stable, auth, arch, manifest);
-            return info === null || info === void 0 ? void 0 : info.resolvedVersion;
+            core.info('Install from dist');
+            downloadPath = await installGoVersion(info, undefined, arch);
         }
         catch (err) {
-            core.info('Unable to resolve a version from the manifest...');
-            core.debug(err.message);
+            throw new Error(`Failed to download version ${versionSpec}: ${err}`);
         }
-    });
+    }
+    return downloadPath;
+}
+async function resolveVersionFromManifest(versionSpec, stable, auth, arch, manifest) {
+    try {
+        const info = await getInfoFromManifest(versionSpec, stable, auth, arch, manifest);
+        return info?.resolvedVersion;
+    }
+    catch (err) {
+        core.info('Unable to resolve a version from the manifest...');
+        core.debug(err.message);
+    }
 }
 // for github hosted windows runner handle latency of OS drive
 // by avoiding write operations to C:
-function cacheWindowsDir(extPath, tool, version, arch) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (os_1.default.platform() !== 'win32')
-            return false;
-        // make sure the action runs in the hosted environment
-        if ((0, utils_1.isSelfHosted)())
-            return false;
-        const defaultToolCacheRoot = process.env['RUNNER_TOOL_CACHE'];
-        if (!defaultToolCacheRoot)
-            return false;
-        if (!fs_1.default.existsSync('d:\\') || !fs_1.default.existsSync('c:\\'))
-            return false;
-        const actualToolCacheRoot = defaultToolCacheRoot
-            .replace('C:', 'D:')
-            .replace('c:', 'd:');
-        // make toolcache root to be on drive d:
-        process.env['RUNNER_TOOL_CACHE'] = actualToolCacheRoot;
-        const actualToolCacheDir = yield tc.cacheDir(extPath, tool, version, arch);
-        // create a link from c: to d:
-        const defaultToolCacheDir = actualToolCacheDir.replace(actualToolCacheRoot, defaultToolCacheRoot);
-        fs_1.default.mkdirSync(path.dirname(defaultToolCacheDir), { recursive: true });
-        fs_1.default.symlinkSync(actualToolCacheDir, defaultToolCacheDir, 'junction');
-        core.info(`Created link ${defaultToolCacheDir} => ${actualToolCacheDir}`);
-        const actualToolCacheCompleteFile = `${actualToolCacheDir}.complete`;
-        const defaultToolCacheCompleteFile = `${defaultToolCacheDir}.complete`;
-        fs_1.default.symlinkSync(actualToolCacheCompleteFile, defaultToolCacheCompleteFile, 'file');
-        core.info(`Created link ${defaultToolCacheCompleteFile} => ${actualToolCacheCompleteFile}`);
-        // make outer code to continue using toolcache as if it were installed on c:
-        // restore toolcache root to default drive c:
-        process.env['RUNNER_TOOL_CACHE'] = defaultToolCacheRoot;
-        return defaultToolCacheDir;
-    });
+async function cacheWindowsDir(extPath, tool, version, arch) {
+    if (os_1.default.platform() !== 'win32')
+        return false;
+    // make sure the action runs in the hosted environment
+    if ((0, utils_1.isSelfHosted)())
+        return false;
+    const defaultToolCacheRoot = process.env['RUNNER_TOOL_CACHE'];
+    if (!defaultToolCacheRoot)
+        return false;
+    if (!fs_1.default.existsSync('d:\\') || !fs_1.default.existsSync('c:\\'))
+        return false;
+    const actualToolCacheRoot = defaultToolCacheRoot
+        .replace('C:', 'D:')
+        .replace('c:', 'd:');
+    // make toolcache root to be on drive d:
+    process.env['RUNNER_TOOL_CACHE'] = actualToolCacheRoot;
+    const actualToolCacheDir = await tc.cacheDir(extPath, tool, version, arch);
+    // create a link from c: to d:
+    const defaultToolCacheDir = actualToolCacheDir.replace(actualToolCacheRoot, defaultToolCacheRoot);
+    fs_1.default.mkdirSync(path.dirname(defaultToolCacheDir), { recursive: true });
+    fs_1.default.symlinkSync(actualToolCacheDir, defaultToolCacheDir, 'junction');
+    core.info(`Created link ${defaultToolCacheDir} => ${actualToolCacheDir}`);
+    const actualToolCacheCompleteFile = `${actualToolCacheDir}.complete`;
+    const defaultToolCacheCompleteFile = `${defaultToolCacheDir}.complete`;
+    fs_1.default.symlinkSync(actualToolCacheCompleteFile, defaultToolCacheCompleteFile, 'file');
+    core.info(`Created link ${defaultToolCacheCompleteFile} => ${actualToolCacheCompleteFile}`);
+    // make outer code to continue using toolcache as if it were installed on c:
+    // restore toolcache root to default drive c:
+    process.env['RUNNER_TOOL_CACHE'] = defaultToolCacheRoot;
+    return defaultToolCacheDir;
 }
-function addExecutablesToToolCache(extPath, info, arch) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tool = 'go';
-        const version = makeSemver(info.resolvedVersion);
-        return ((yield cacheWindowsDir(extPath, tool, version, arch)) ||
-            (yield tc.cacheDir(extPath, tool, version, arch)));
-    });
+async function addExecutablesToToolCache(extPath, info, arch) {
+    const tool = 'go';
+    const version = makeSemver(info.resolvedVersion);
+    return ((await cacheWindowsDir(extPath, tool, version, arch)) ||
+        (await tc.cacheDir(extPath, tool, version, arch)));
 }
-function installGoVersion(info, auth, arch) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.info(`Acquiring ${info.resolvedVersion} from ${info.downloadUrl}`);
-        // Windows requires that we keep the extension (.zip) for extraction
-        const isWindows = os_1.default.platform() === 'win32';
-        const tempDir = process.env.RUNNER_TEMP || '.';
-        const fileName = isWindows ? path.join(tempDir, info.fileName) : undefined;
-        const downloadPath = yield tc.downloadTool(info.downloadUrl, fileName, auth);
-        core.info('Extracting Go...');
-        let extPath = yield extractGoArchive(downloadPath);
-        core.info(`Successfully extracted go to ${extPath}`);
-        if (info.type === 'dist') {
-            extPath = path.join(extPath, 'go');
-        }
-        core.info('Adding to the cache ...');
-        const toolCacheDir = yield addExecutablesToToolCache(extPath, info, arch);
-        core.info(`Successfully cached go to ${toolCacheDir}`);
-        return toolCacheDir;
-    });
+async function installGoVersion(info, auth, arch) {
+    core.info(`Acquiring ${info.resolvedVersion} from ${info.downloadUrl}`);
+    // Windows requires that we keep the extension (.zip) for extraction
+    const isWindows = os_1.default.platform() === 'win32';
+    const tempDir = process.env.RUNNER_TEMP || '.';
+    const fileName = isWindows ? path.join(tempDir, info.fileName) : undefined;
+    const downloadPath = await tc.downloadTool(info.downloadUrl, fileName, auth);
+    core.info('Extracting Go...');
+    let extPath = await extractGoArchive(downloadPath);
+    core.info(`Successfully extracted go to ${extPath}`);
+    if (info.type === 'dist') {
+        extPath = path.join(extPath, 'go');
+    }
+    core.info('Adding to the cache ...');
+    const toolCacheDir = await addExecutablesToToolCache(extPath, info, arch);
+    core.info(`Successfully cached go to ${toolCacheDir}`);
+    return toolCacheDir;
 }
-function extractGoArchive(archivePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const platform = os_1.default.platform();
-        let extPath;
-        if (platform === 'win32') {
-            extPath = yield tc.extractZip(archivePath);
-        }
-        else {
-            extPath = yield tc.extractTar(archivePath);
-        }
-        return extPath;
-    });
+async function extractGoArchive(archivePath) {
+    const platform = os_1.default.platform();
+    let extPath;
+    if (platform === 'win32') {
+        extPath = await tc.extractZip(archivePath);
+    }
+    else {
+        extPath = await tc.extractTar(archivePath);
+    }
+    return extPath;
 }
 function isIToolRelease(obj) {
     return (typeof obj === 'object' &&
@@ -94517,126 +94477,114 @@ function isIToolRelease(obj) {
             typeof file.arch === 'string' &&
             typeof file.download_url === 'string'));
 }
-function getManifest(auth) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const manifest = yield getManifestFromRepo(auth);
-            if (Array.isArray(manifest) &&
-                manifest.length &&
-                manifest.every(isIToolRelease)) {
-                return manifest;
-            }
-            let errorMessage = 'An unexpected error occurred while fetching the manifest.';
-            if (typeof manifest === 'object' &&
-                manifest !== null &&
-                'message' in manifest) {
-                errorMessage = manifest.message;
-            }
-            throw new Error(errorMessage);
+async function getManifest(auth) {
+    try {
+        const manifest = await getManifestFromRepo(auth);
+        if (Array.isArray(manifest) &&
+            manifest.length &&
+            manifest.every(isIToolRelease)) {
+            return manifest;
         }
-        catch (err) {
-            core.debug('Fetching the manifest via the API failed.');
-            if (err instanceof Error) {
-                core.debug(err.message);
-            }
+        let errorMessage = 'An unexpected error occurred while fetching the manifest.';
+        if (typeof manifest === 'object' &&
+            manifest !== null &&
+            'message' in manifest) {
+            errorMessage = manifest.message;
         }
-        return yield getManifestFromURL();
-    });
+        throw new Error(errorMessage);
+    }
+    catch (err) {
+        core.debug('Fetching the manifest via the API failed.');
+        if (err instanceof Error) {
+            core.debug(err.message);
+        }
+    }
+    return await getManifestFromURL();
 }
 function getManifestFromRepo(auth) {
     core.debug(`Getting manifest from ${MANIFEST_REPO_OWNER}/${MANIFEST_REPO_NAME}@${MANIFEST_REPO_BRANCH}`);
     return tc.getManifestFromRepo(MANIFEST_REPO_OWNER, MANIFEST_REPO_NAME, auth, MANIFEST_REPO_BRANCH);
 }
-function getManifestFromURL() {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug('Falling back to fetching the manifest using raw URL.');
-        const http = new httpm.HttpClient('tool-cache');
-        const response = yield http.getJson(MANIFEST_URL);
-        if (!response.result) {
-            throw new Error(`Unable to get manifest from ${MANIFEST_URL}`);
-        }
-        return response.result;
-    });
+async function getManifestFromURL() {
+    core.debug('Falling back to fetching the manifest using raw URL.');
+    const http = new httpm.HttpClient('tool-cache');
+    const response = await http.getJson(MANIFEST_URL);
+    if (!response.result) {
+        throw new Error(`Unable to get manifest from ${MANIFEST_URL}`);
+    }
+    return response.result;
 }
-function getInfoFromManifest(versionSpec_1, stable_1, auth_1) {
-    return __awaiter(this, arguments, void 0, function* (versionSpec, stable, auth, arch = os_1.default.arch(), manifest) {
-        let info = null;
-        if (!manifest) {
-            core.debug('No manifest cached');
-            manifest = yield getManifest(auth);
-        }
-        core.info(`matching ${versionSpec}...`);
-        const rel = yield tc.findFromManifest(versionSpec, stable, manifest, arch);
-        if (rel && rel.files.length > 0) {
-            info = {};
-            info.type = 'manifest';
-            info.resolvedVersion = rel.version;
-            info.downloadUrl = rel.files[0].download_url;
-            info.fileName = rel.files[0].filename;
-        }
-        return info;
-    });
+async function getInfoFromManifest(versionSpec, stable, auth, arch = os_1.default.arch(), manifest) {
+    let info = null;
+    if (!manifest) {
+        core.debug('No manifest cached');
+        manifest = await getManifest(auth);
+    }
+    core.info(`matching ${versionSpec}...`);
+    const rel = await tc.findFromManifest(versionSpec, stable, manifest, arch);
+    if (rel && rel.files.length > 0) {
+        info = {};
+        info.type = 'manifest';
+        info.resolvedVersion = rel.version;
+        info.downloadUrl = rel.files[0].download_url;
+        info.fileName = rel.files[0].filename;
+    }
+    return info;
 }
-function getInfoFromDist(versionSpec, arch) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const version = yield findMatch(versionSpec, arch);
-        if (!version) {
-            return null;
-        }
-        const downloadUrl = `https://storage.googleapis.com/golang/${version.files[0].filename}`;
-        return {
-            type: 'dist',
-            downloadUrl: downloadUrl,
-            resolvedVersion: version.version,
-            fileName: version.files[0].filename
-        };
-    });
+async function getInfoFromDist(versionSpec, arch) {
+    const version = await findMatch(versionSpec, arch);
+    if (!version) {
+        return null;
+    }
+    const downloadUrl = `https://storage.googleapis.com/golang/${version.files[0].filename}`;
+    return {
+        type: 'dist',
+        downloadUrl: downloadUrl,
+        resolvedVersion: version.version,
+        fileName: version.files[0].filename
+    };
 }
-function findMatch(versionSpec_1) {
-    return __awaiter(this, arguments, void 0, function* (versionSpec, arch = os_1.default.arch()) {
-        const archFilter = sys.getArch(arch);
-        const platFilter = sys.getPlatform();
-        let result;
-        let match;
-        const dlUrl = 'https://golang.org/dl/?mode=json&include=all';
-        const candidates = yield module.exports.getVersionsDist(dlUrl);
-        if (!candidates) {
-            throw new Error(`golang download url did not return results`);
-        }
-        let goFile;
-        for (let i = 0; i < candidates.length; i++) {
-            const candidate = candidates[i];
-            const version = makeSemver(candidate.version);
-            core.debug(`check ${version} satisfies ${versionSpec}`);
-            if (semver.satisfies(version, versionSpec)) {
-                goFile = candidate.files.find(file => {
-                    core.debug(`${file.arch}===${archFilter} && ${file.os}===${platFilter}`);
-                    return file.arch === archFilter && file.os === platFilter;
-                });
-                if (goFile) {
-                    core.debug(`matched ${candidate.version}`);
-                    match = candidate;
-                    break;
-                }
+async function findMatch(versionSpec, arch = os_1.default.arch()) {
+    const archFilter = sys.getArch(arch);
+    const platFilter = sys.getPlatform();
+    let result;
+    let match;
+    const dlUrl = 'https://golang.org/dl/?mode=json&include=all';
+    const candidates = await module.exports.getVersionsDist(dlUrl);
+    if (!candidates) {
+        throw new Error(`golang download url did not return results`);
+    }
+    let goFile;
+    for (let i = 0; i < candidates.length; i++) {
+        const candidate = candidates[i];
+        const version = makeSemver(candidate.version);
+        core.debug(`check ${version} satisfies ${versionSpec}`);
+        if (semver.satisfies(version, versionSpec)) {
+            goFile = candidate.files.find(file => {
+                core.debug(`${file.arch}===${archFilter} && ${file.os}===${platFilter}`);
+                return file.arch === archFilter && file.os === platFilter;
+            });
+            if (goFile) {
+                core.debug(`matched ${candidate.version}`);
+                match = candidate;
+                break;
             }
         }
-        if (match && goFile) {
-            // clone since we're mutating the file list to be only the file that matches
-            result = Object.assign({}, match);
-            result.files = [goFile];
-        }
-        return result;
-    });
+    }
+    if (match && goFile) {
+        // clone since we're mutating the file list to be only the file that matches
+        result = Object.assign({}, match);
+        result.files = [goFile];
+    }
+    return result;
 }
-function getVersionsDist(dlUrl) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // this returns versions descending so latest is first
-        const http = new httpm.HttpClient('setup-go', [], {
-            allowRedirects: true,
-            maxRedirects: 3
-        });
-        return (yield http.getJson(dlUrl)).result;
+async function getVersionsDist(dlUrl) {
+    // this returns versions descending so latest is first
+    const http = new httpm.HttpClient('setup-go', [], {
+        allowRedirects: true,
+        maxRedirects: 3
     });
+    return (await http.getJson(dlUrl)).result;
 }
 //
 // Convert the go version syntax into semver for semver matching
@@ -94645,11 +94593,10 @@ function getVersionsDist(dlUrl) {
 // 1.10beta1 => 1.10.0-beta.1, 1.10rc1 => 1.10.0-rc.1
 // 1.8.5beta1 => 1.8.5-beta.1, 1.8.5rc1 => 1.8.5-rc.1
 function makeSemver(version) {
-    var _a;
     version = version.replace('go', '');
     version = version.replace('beta', '-beta.').replace('rc', '-rc.');
     const parts = version.split('-');
-    const semVersion = (_a = semver.coerce(parts[0])) === null || _a === void 0 ? void 0 : _a.version;
+    const semVersion = semver.coerce(parts[0])?.version;
     if (!semVersion) {
         throw new Error(`The version: ${version} can't be changed to SemVer notation`);
     }
@@ -94680,48 +94627,47 @@ function parseGoVersionFile(versionFilePath) {
         return matchGo ? matchGo[1] : '';
     }
     else if (path.basename(versionFilePath) === '.tool-versions') {
-        const match = contents.match(/^golang\s+([^\s#]+)/m);
+        const match = contents.match(/^golang\s+v?(?<version>[^\s#]+)/m);
         return match ? match[1] : '';
     }
     return contents.trim();
 }
-function resolveStableVersionDist(versionSpec, arch) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const archFilter = sys.getArch(arch);
-        const platFilter = sys.getPlatform();
-        const dlUrl = 'https://golang.org/dl/?mode=json&include=all';
-        const candidates = yield module.exports.getVersionsDist(dlUrl);
-        if (!candidates) {
-            throw new Error(`golang download url did not return results`);
-        }
-        const fixedCandidates = candidates.map(item => {
-            return Object.assign(Object.assign({}, item), { version: makeSemver(item.version) });
-        });
-        const stableVersion = yield resolveStableVersionInput(versionSpec, archFilter, platFilter, fixedCandidates);
-        return stableVersion;
+async function resolveStableVersionDist(versionSpec, arch) {
+    const archFilter = sys.getArch(arch);
+    const platFilter = sys.getPlatform();
+    const dlUrl = 'https://golang.org/dl/?mode=json&include=all';
+    const candidates = await module.exports.getVersionsDist(dlUrl);
+    if (!candidates) {
+        throw new Error(`golang download url did not return results`);
+    }
+    const fixedCandidates = candidates.map(item => {
+        return {
+            ...item,
+            version: makeSemver(item.version)
+        };
     });
+    const stableVersion = await resolveStableVersionInput(versionSpec, archFilter, platFilter, fixedCandidates);
+    return stableVersion;
 }
-function resolveStableVersionInput(versionSpec, arch, platform, manifest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const releases = manifest
-            .map(item => {
-            const index = item.files.findIndex(item => item.arch === arch && item.filename.includes(platform));
-            if (index === -1) {
-                return '';
-            }
-            return item.version;
-        })
-            .filter(item => !!item && !semver.prerelease(item));
-        if (versionSpec === utils_1.StableReleaseAlias.Stable) {
-            return releases[0];
+async function resolveStableVersionInput(versionSpec, arch, platform, manifest) {
+    const releases = manifest
+        .map(item => {
+        const index = item.files.findIndex(item => item.arch === arch && item.filename.includes(platform));
+        if (index === -1) {
+            return '';
         }
-        else {
-            const versions = releases.map(release => `${semver.major(release)}.${semver.minor(release)}`);
-            const uniqueVersions = Array.from(new Set(versions));
-            const oldstableVersion = releases.find(item => item.startsWith(uniqueVersions[1]));
-            return oldstableVersion;
-        }
-    });
+        return item.version;
+    })
+        .filter(item => !!item && !semver.prerelease(item));
+    if (versionSpec === utils_1.StableReleaseAlias.Stable) {
+        return releases[0];
+    }
+    else {
+        const versions = releases.map(release => `${semver.major(release)}.${semver.minor(release)}`);
+        const uniqueVersions = Array.from(new Set(versions));
+        const oldstableVersion = releases.find(item => item.startsWith(uniqueVersions[1]));
+        return oldstableVersion;
+    }
 }
 
 
@@ -94765,15 +94711,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -94791,98 +94728,94 @@ const cache_utils_1 = __nccwpck_require__(1678);
 const child_process_1 = __importDefault(__nccwpck_require__(2081));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const os_1 = __importDefault(__nccwpck_require__(2037));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            //
-            // versionSpec is optional.  If supplied, install / use from the tool cache
-            // If not supplied then problem matchers will still be setup.  Useful for self-hosted.
-            //
-            const versionSpec = resolveVersionInput();
-            setGoToolchain();
-            const cache = core.getBooleanInput('cache');
-            core.info(`Setup go version spec ${versionSpec}`);
-            let arch = core.getInput('architecture');
-            if (!arch) {
-                arch = os_1.default.arch();
-            }
-            if (versionSpec) {
-                const token = core.getInput('token');
-                const auth = !token ? undefined : `token ${token}`;
-                const checkLatest = core.getBooleanInput('check-latest');
-                const installDir = yield installer.getGo(versionSpec, checkLatest, auth, arch);
-                const installDirVersion = path_1.default.basename(path_1.default.dirname(installDir));
-                core.addPath(path_1.default.join(installDir, 'bin'));
-                core.info('Added go to the path');
-                const version = installer.makeSemver(installDirVersion);
-                // Go versions less than 1.9 require GOROOT to be set
-                if (semver.lt(version, '1.9.0')) {
-                    core.info('Setting GOROOT for Go version < 1.9');
-                    core.exportVariable('GOROOT', installDir);
-                }
-                core.info(`Successfully set up Go version ${versionSpec}`);
-            }
-            else {
-                core.info('[warning]go-version input was not specified. The action will try to use pre-installed version.');
-            }
-            const added = yield addBinToPath();
-            core.debug(`add bin ${added}`);
-            const goPath = yield io.which('go');
-            const goVersion = (child_process_1.default.execSync(`${goPath} version`) || '').toString();
-            if (cache && (0, cache_utils_1.isCacheFeatureAvailable)()) {
-                const packageManager = 'default';
-                const cacheDependencyPath = core.getInput('cache-dependency-path');
-                try {
-                    yield (0, cache_restore_1.restoreCache)(parseGoVersion(goVersion), packageManager, cacheDependencyPath);
-                }
-                catch (error) {
-                    core.warning(`Restore cache failed: ${error.message}`);
-                }
-            }
-            // add problem matchers
-            const matchersPath = path_1.default.join(__dirname, '../..', 'matchers.json');
-            core.info(`##[add-matcher]${matchersPath}`);
-            // output the version actually being used
-            core.info(goVersion);
-            core.setOutput('go-version', parseGoVersion(goVersion));
-            core.startGroup('go env');
-            const goEnv = (child_process_1.default.execSync(`${goPath} env`) || '').toString();
-            core.info(goEnv);
-            core.endGroup();
+async function run() {
+    try {
+        //
+        // versionSpec is optional.  If supplied, install / use from the tool cache
+        // If not supplied then problem matchers will still be setup.  Useful for self-hosted.
+        //
+        const versionSpec = resolveVersionInput();
+        setGoToolchain();
+        const cache = core.getBooleanInput('cache');
+        core.info(`Setup go version spec ${versionSpec}`);
+        let arch = core.getInput('architecture');
+        if (!arch) {
+            arch = os_1.default.arch();
         }
-        catch (error) {
-            core.setFailed(error.message);
+        if (versionSpec) {
+            const token = core.getInput('token');
+            const auth = !token ? undefined : `token ${token}`;
+            const checkLatest = core.getBooleanInput('check-latest');
+            const installDir = await installer.getGo(versionSpec, checkLatest, auth, arch);
+            const installDirVersion = path_1.default.basename(path_1.default.dirname(installDir));
+            core.addPath(path_1.default.join(installDir, 'bin'));
+            core.info('Added go to the path');
+            const version = installer.makeSemver(installDirVersion);
+            // Go versions less than 1.9 require GOROOT to be set
+            if (semver.lt(version, '1.9.0')) {
+                core.info('Setting GOROOT for Go version < 1.9');
+                core.exportVariable('GOROOT', installDir);
+            }
+            core.info(`Successfully set up Go version ${versionSpec}`);
         }
-    });
+        else {
+            core.info('[warning]go-version input was not specified. The action will try to use pre-installed version.');
+        }
+        const added = await addBinToPath();
+        core.debug(`add bin ${added}`);
+        const goPath = await io.which('go');
+        const goVersion = (child_process_1.default.execSync(`${goPath} version`) || '').toString();
+        if (cache && (0, cache_utils_1.isCacheFeatureAvailable)()) {
+            const packageManager = 'default';
+            const cacheDependencyPath = core.getInput('cache-dependency-path');
+            try {
+                await (0, cache_restore_1.restoreCache)(parseGoVersion(goVersion), packageManager, cacheDependencyPath);
+            }
+            catch (error) {
+                core.warning(`Restore cache failed: ${error.message}`);
+            }
+        }
+        // add problem matchers
+        const matchersPath = path_1.default.join(__dirname, '../..', 'matchers.json');
+        core.info(`##[add-matcher]${matchersPath}`);
+        // output the version actually being used
+        core.info(goVersion);
+        core.setOutput('go-version', parseGoVersion(goVersion));
+        core.startGroup('go env');
+        const goEnv = (child_process_1.default.execSync(`${goPath} env`) || '').toString();
+        core.info(goEnv);
+        core.endGroup();
+    }
+    catch (error) {
+        core.setFailed(error.message);
+    }
 }
-function addBinToPath() {
-    return __awaiter(this, void 0, void 0, function* () {
-        let added = false;
-        const g = yield io.which('go');
-        core.debug(`which go :${g}:`);
-        if (!g) {
-            core.debug('go not in the path');
-            return added;
-        }
-        const buf = child_process_1.default.execSync('go env GOPATH');
-        if (buf.length > 1) {
-            const gp = buf.toString().trim();
-            core.debug(`go env GOPATH :${gp}:`);
-            if (!fs_1.default.existsSync(gp)) {
-                // some of the hosted images have go install but not profile dir
-                core.debug(`creating ${gp}`);
-                yield io.mkdirP(gp);
-            }
-            const bp = path_1.default.join(gp, 'bin');
-            if (!fs_1.default.existsSync(bp)) {
-                core.debug(`creating ${bp}`);
-                yield io.mkdirP(bp);
-            }
-            core.addPath(bp);
-            added = true;
-        }
+async function addBinToPath() {
+    let added = false;
+    const g = await io.which('go');
+    core.debug(`which go :${g}:`);
+    if (!g) {
+        core.debug('go not in the path');
         return added;
-    });
+    }
+    const buf = child_process_1.default.execSync('go env GOPATH');
+    if (buf.length > 1) {
+        const gp = buf.toString().trim();
+        core.debug(`go env GOPATH :${gp}:`);
+        if (!fs_1.default.existsSync(gp)) {
+            // some of the hosted images have go install but not profile dir
+            core.debug(`creating ${gp}`);
+            await io.mkdirP(gp);
+        }
+        const bp = path_1.default.join(gp, 'bin');
+        if (!fs_1.default.existsSync(bp)) {
+            core.debug(`creating ${bp}`);
+            await io.mkdirP(bp);
+        }
+        core.addPath(bp);
+        added = true;
+    }
+    return added;
 }
 function parseGoVersion(versionString) {
     // get the installed version as an Action output

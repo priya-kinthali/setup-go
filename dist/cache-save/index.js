@@ -87718,15 +87718,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -87747,35 +87738,33 @@ process.on('uncaughtException', e => {
 // Added early exit to resolve issue with slow post action step:
 // - https://github.com/actions/setup-node/issues/878
 // https://github.com/actions/cache/pull/1217
-function run(earlyExit) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const cacheInput = core.getBooleanInput('cache');
-            if (cacheInput) {
-                yield cachePackages();
-                if (earlyExit) {
-                    process.exit(0);
-                }
+async function run(earlyExit) {
+    try {
+        const cacheInput = core.getBooleanInput('cache');
+        if (cacheInput) {
+            await cachePackages();
+            if (earlyExit) {
+                process.exit(0);
             }
         }
-        catch (error) {
-            let message = 'Unknown error!';
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            if (typeof error === 'string') {
-                message = error;
-            }
-            core.warning(message);
+    }
+    catch (error) {
+        let message = 'Unknown error!';
+        if (error instanceof Error) {
+            message = error.message;
         }
-    });
+        if (typeof error === 'string') {
+            message = error;
+        }
+        core.warning(message);
+    }
 }
-const cachePackages = () => __awaiter(void 0, void 0, void 0, function* () {
+const cachePackages = async () => {
     const packageManager = 'default';
     const state = core.getState(constants_1.State.CacheMatchedKey);
     const primaryKey = core.getState(constants_1.State.CachePrimaryKey);
-    const packageManagerInfo = yield (0, cache_utils_1.getPackageManagerInfo)(packageManager);
-    const cachePaths = yield (0, cache_utils_1.getCacheDirectoryPath)(packageManagerInfo);
+    const packageManagerInfo = await (0, cache_utils_1.getPackageManagerInfo)(packageManager);
+    const cachePaths = await (0, cache_utils_1.getCacheDirectoryPath)(packageManagerInfo);
     const nonExistingPaths = cachePaths.filter(cachePath => !fs_1.default.existsSync(cachePath));
     if (nonExistingPaths.length === cachePaths.length) {
         core.warning('There are no cache folders on the disk');
@@ -87792,12 +87781,12 @@ const cachePackages = () => __awaiter(void 0, void 0, void 0, function* () {
         core.info(`Cache hit occurred on the primary key ${primaryKey}, not saving cache.`);
         return;
     }
-    const cacheId = yield cache.saveCache(cachePaths, primaryKey);
+    const cacheId = await cache.saveCache(cachePaths, primaryKey);
     if (cacheId === -1) {
         return;
     }
     core.info(`Cache saved with the key: ${primaryKey}`);
-});
+};
 function logWarning(message) {
     const warningPrefix = '[warning]';
     core.info(`${warningPrefix}${message}`);
@@ -87845,15 +87834,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getCacheDirectoryPath = exports.getPackageManagerInfo = exports.getCommandOutput = void 0;
 exports.isGhes = isGhes;
@@ -87862,8 +87842,8 @@ const cache = __importStar(__nccwpck_require__(7799));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const package_managers_1 = __nccwpck_require__(6663);
-const getCommandOutput = (toolCommand) => __awaiter(void 0, void 0, void 0, function* () {
-    let { stdout, stderr, exitCode } = yield exec.getExecOutput(toolCommand, undefined, { ignoreReturnCode: true });
+const getCommandOutput = async (toolCommand) => {
+    let { stdout, stderr, exitCode } = await exec.getExecOutput(toolCommand, undefined, { ignoreReturnCode: true });
     if (exitCode) {
         stderr = !stderr.trim()
             ? `The '${toolCommand}' command failed with exit code: ${exitCode}`
@@ -87871,18 +87851,18 @@ const getCommandOutput = (toolCommand) => __awaiter(void 0, void 0, void 0, func
         throw new Error(stderr);
     }
     return stdout.trim();
-});
+};
 exports.getCommandOutput = getCommandOutput;
-const getPackageManagerInfo = (packageManager) => __awaiter(void 0, void 0, void 0, function* () {
+const getPackageManagerInfo = async (packageManager) => {
     if (!package_managers_1.supportedPackageManagers[packageManager]) {
         throw new Error(`It's not possible to use ${packageManager}, please, check correctness of the package manager name spelling.`);
     }
     const obtainedPackageManager = package_managers_1.supportedPackageManagers[packageManager];
     return obtainedPackageManager;
-});
+};
 exports.getPackageManagerInfo = getPackageManagerInfo;
-const getCacheDirectoryPath = (packageManagerInfo) => __awaiter(void 0, void 0, void 0, function* () {
-    const pathOutputs = yield Promise.allSettled(packageManagerInfo.cacheFolderCommandList.map((command) => __awaiter(void 0, void 0, void 0, function* () { return (0, exports.getCommandOutput)(command); })));
+const getCacheDirectoryPath = async (packageManagerInfo) => {
+    const pathOutputs = await Promise.allSettled(packageManagerInfo.cacheFolderCommandList.map(async (command) => (0, exports.getCommandOutput)(command)));
     const results = pathOutputs.map(item => {
         if (item.status === 'fulfilled') {
             return item.value;
@@ -87897,7 +87877,7 @@ const getCacheDirectoryPath = (packageManagerInfo) => __awaiter(void 0, void 0, 
         throw new Error(`Could not get cache folder paths.`);
     }
     return cachePaths;
-});
+};
 exports.getCacheDirectoryPath = getCacheDirectoryPath;
 function isGhes() {
     const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
