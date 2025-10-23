@@ -522,9 +522,7 @@ export function parseGoVersionFile(versionFilePath: string): string {
         .replace(
           /^(\d+\.\d+)(?:\.(\d+))?(rc|beta)(\d+)$/,
           (_, mm, patch, pre, preNum) => `${mm}.${patch || 0}-${pre}.${preNum}`
-        )
-        // Add .0 if only major.minor
-        .replace(/^(\d+\.\d+)$/, '$1.0');
+        );
     }
 
     return version || '';

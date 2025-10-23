@@ -902,9 +902,9 @@ use .
 
       await main.run();
 
-      expect(logSpy).toHaveBeenCalledWith('Setup go version spec 1.23.0');
-      expect(logSpy).toHaveBeenCalledWith('Attempting to download 1.23.0...');
-      expect(logSpy).toHaveBeenCalledWith('matching 1.23.0...');
+      expect(logSpy).toHaveBeenCalledWith('Setup go version spec 1.23');
+      expect(logSpy).toHaveBeenCalledWith('Attempting to download 1.23...');
+      expect(logSpy).toHaveBeenCalledWith('matching 1.23...');
     });
 
     it('reads version from .go-version', async () => {
