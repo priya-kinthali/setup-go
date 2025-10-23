@@ -515,7 +515,19 @@ export function parseGoVersionFile(versionFilePath: string): string {
     return matchGo ? matchGo[1] : '';
   } else if (path.basename(versionFilePath) === '.tool-versions') {
     const match = contents.match(/^golang\s+(?:v(?=\S))?(?<version>[^\n#]+)/m);
-    return match?.groups?.version || '';
+    let version = match?.groups?.version?.trim();
+    if (version) {
+      version = version
+        // Handle pre-release (rc, beta), with or without patch
+        .replace(
+          /^(\d+\.\d+)(?:\.(\d+))?(rc|beta)(\d+)$/,
+          (_, mm, patch, pre, preNum) => `${mm}.${patch || 0}-${pre}.${preNum}`
+        )
+        // Add .0 if only major.minor
+        .replace(/^(\d+\.\d+)$/, '$1.0');
+    }
+
+    return version || '';
   }
 
   return contents.trim();
