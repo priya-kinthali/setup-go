@@ -142,6 +142,22 @@ jobs:
         run: __tests__/verify-go.sh 1.21
         shell: bash
 
+  go-version-file-with-tool-versions:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go and check latest
+        uses: ./
+        with:
+          go-version-file: __tests__/data/.tool-versions
+      - name: verify go
+        run: __tests__/verify-go.sh 1.23.2
+        shell: bash
+
   setup-versions-from-manifest:
     runs-on: ${{ matrix.os }}
     strategy:
