@@ -1,16 +1,17 @@
 ---
-name: undici
-version: 5.29.0
+name: anynum
+version: 1.0.0
 type: npm
-summary: An HTTP/1.1 client, written from scratch for Node.js
-homepage: https://undici.nodejs.org
+summary: Normalize all Unicode decimal digits (Devanagari, Arabic, Thai, etc.) to
+  ASCII numerals. Zero dependencies, performance-first.
+homepage:
 license: mit
 licenses:
 - sources: LICENSE
   text: |
     MIT License
 
-    Copyright (c) Matteo Collina and Undici contributors
+    Copyright (c) 2026 Natural Intelligence
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
